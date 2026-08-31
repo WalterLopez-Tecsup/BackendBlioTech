@@ -1,0 +1,147 @@
+package pe.biblioteca.prestamos.service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import pe.biblioteca.prestamos.client.LibrosClient;
+import pe.biblioteca.prestamos.client.NotificacionesClient;
+import pe.biblioteca.prestamos.dto.EjemplarResponse;
+import pe.biblioteca.prestamos.dto.PrestamoRequest;
+import pe.biblioteca.prestamos.dto.PrestamoResponse;
+import pe.biblioteca.prestamos.dto.SocioResponse;
+import pe.biblioteca.prestamos.entity.Prestamo;
+import pe.biblioteca.prestamos.factory.MensajeNotificacionFactory;
+import pe.biblioteca.prestamos.repository.PrestamoRepository;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class PrestamoService {
+
+    private final PrestamoRepository prestamoRepository;
+    private final LibrosClient librosClient;
+    private final NotificacionesClient notificacionesClient;
+
+    public PrestamoResponse registrar(PrestamoRequest req) {
+        int dias = req.getDiasPrestamo() != null ? req.getDiasPrestamo() : 7;
+
+
+        SocioResponse socio = librosClient.consultarSocio(req.getSocioId());
+        if (socio == null) {
+            return rechazar(req, "Socio no existe");
+        }
+        if (!socio.isActivo()) {
+            return rechazar(req, "Socio inactivo");
+        }
+
+
+        EjemplarResponse ejemplar = librosClient.consultarEjemplar(req.getEjemplarId());
+        if (ejemplar == null) {
+            return rechazar(req, "Ejemplar no existe");
+        }
+        if (!ejemplar.isDisponible()) {
+            return rechazar(req, "No disponible");
+        }
+
+
+        librosClient.cambiarDisponibilidad(req.getEjemplarId(), false);
+
+
+        Prestamo prestamo = new Prestamo(
+                null,
+                req.getEjemplarId(),
+                req.getSocioId(),
+                LocalDateTime.now(),
+                LocalDate.now().plusDays(dias),
+                null,
+                "REGISTRADA",
+                null,
+                null,
+                null,
+                null
+        );
+        Prestamo guardado = prestamoRepository.save(prestamo);
+
+
+        String mensaje = MensajeNotificacionFactory.crearMensaje("REGISTRADA", req.getEjemplarId(), socio.getNombre());
+        notificacionesClient.notificar(socio.getEmail(), mensaje);
+
+
+        return PrestamoResponse.builder()
+                .id(guardado.getId())
+                .ejemplarId(guardado.getEjemplarId())
+                .socioId(guardado.getSocioId())
+                .estado(guardado.getEstado())
+                .fechaPrestamo(guardado.getFechaPrestamo())
+                .fechaDevolucionEsperada(guardado.getFechaDevolucionEsperada())
+                .build();
+    }
+
+    public List<Prestamo> listar() {
+        return prestamoRepository.findAll();
+    }
+
+    public Prestamo buscarPorId(Long id) {
+        return prestamoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Préstamo no encontrado: " + id));
+    }
+
+    public PrestamoResponse registrarDevolucion(Long id) {
+        Prestamo prestamo = buscarPorId(id);
+
+        if ("DEVUELTO".equals(prestamo.getEstado())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El préstamo ya fue devuelto");
+        }
+
+        prestamo.setEstado("DEVUELTO");
+        prestamo.setFechaDevolucionReal(LocalDateTime.now());
+        Prestamo guardado = prestamoRepository.save(prestamo);
+
+        librosClient.cambiarDisponibilidad(prestamo.getEjemplarId(), true);
+
+
+        return PrestamoResponse.builder()
+                .id(guardado.getId())
+                .ejemplarId(guardado.getEjemplarId())
+                .socioId(guardado.getSocioId())
+                .estado(guardado.getEstado())
+                .fechaPrestamo(guardado.getFechaPrestamo())
+                .fechaDevolucionReal(guardado.getFechaDevolucionReal())
+                .build();
+    }
+
+    private PrestamoResponse rechazar(PrestamoRequest req, String motivo) {
+        log.warn("Préstamo RECHAZADO ejemplarId={}, socioId={}, motivo={}",
+                req.getEjemplarId(), req.getSocioId(), motivo);
+
+        Prestamo rechazado = new Prestamo(
+                null,
+                req.getEjemplarId(),
+                req.getSocioId(),
+                LocalDateTime.now(),
+                null,
+                null,
+                "RECHAZADA",
+                motivo,
+                null,
+                null,
+                null
+        );
+        Prestamo guardado = prestamoRepository.save(rechazado);
+
+
+        return PrestamoResponse.builder()
+                .id(guardado.getId())
+                .ejemplarId(req.getEjemplarId())
+                .socioId(req.getSocioId())
+                .estado("RECHAZADA")
+                .motivoRechazo(motivo)
+                .build();
+    }
+}
