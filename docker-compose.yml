@@ -1,21 +1,5 @@
 services:
 
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: postgres
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - biblioteca-net
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   eureka-server:
     build: ./eureka-server
     ports:
@@ -90,8 +74,6 @@ services:
     depends_on:
       config-server:
         condition: service_healthy
-      postgres:
-        condition: service_healthy
 
   notificaciones-service:
     build: ./notificaciones-service
@@ -104,12 +86,7 @@ services:
     depends_on:
       config-server:
         condition: service_healthy
-      postgres:
-        condition: service_healthy
 
 networks:
   biblioteca-net:
     driver: bridge
-
-volumes:
-  postgres-data:
