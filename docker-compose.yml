@@ -4,6 +4,8 @@ services:
     build: ./eureka-server
     ports:
       - "8761:8761"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx160m -XX:+UseSerialGC
     networks:
       - biblioteca-net
     healthcheck:
@@ -17,6 +19,8 @@ services:
     build: ./config-server
     ports:
       - "8888:8888"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx160m -XX:+UseSerialGC
     networks:
       - biblioteca-net
     depends_on:
@@ -34,7 +38,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      - SPRING_PROFILES_ACTIVE=docker
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx160m -XX:+UseSerialGC
     networks:
       - biblioteca-net
     depends_on:
@@ -44,7 +49,8 @@ services:
   auth-service:
     build: ./auth-service
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      - SPRING_PROFILES_ACTIVE=docker
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx160m -XX:+UseSerialGC
     networks:
       - biblioteca-net
     depends_on:
@@ -56,7 +62,8 @@ services:
     ports:
       - "8081:8081"
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      - SPRING_PROFILES_ACTIVE=docker
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx160m -XX:+UseSerialGC
     networks:
       - biblioteca-net
     depends_on:
@@ -68,7 +75,8 @@ services:
     ports:
       - "8082:8082"
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      - SPRING_PROFILES_ACTIVE=docker
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx160m -XX:+UseSerialGC
     networks:
       - biblioteca-net
     depends_on:
@@ -80,7 +88,8 @@ services:
     ports:
       - "8083:8083"
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      - SPRING_PROFILES_ACTIVE=docker
+      - JAVA_TOOL_OPTIONS=-Xms64m -Xmx160m -XX:+UseSerialGC
     networks:
       - biblioteca-net
     depends_on:
