@@ -7,8 +7,6 @@ RUN mvn -q clean package -DskipTests
 
 FROM amazoncorretto:21-al2023-headless
 WORKDIR /app
-RUN groupadd -r app && useradd -r -g app app
-COPY --from=build --chown=app:app /app/target/*.jar app.jar
-USER app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8084
 ENTRYPOINT ["java", "-jar", "app.jar"]
