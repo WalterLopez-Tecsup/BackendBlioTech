@@ -8,4 +8,5 @@ public class EjemplarResponse {
     private String titulo;
     private String autor;
     private boolean disponible;
+    private Double precio;
 }

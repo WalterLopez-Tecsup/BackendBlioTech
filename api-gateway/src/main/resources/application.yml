@@ -43,11 +43,19 @@ spring:
               predicates:
                 - Path=/api/v1/prestamos/**
 
+            - id: pedidos
+              uri: lb://prestamos-service
+              predicates:
+                - Path=/api/v1/pedidos/**
+
             - id: notificaciones
               uri: lb://notificaciones-service
               predicates:
                 - Path=/api/v1/notificaciones/**
 
+
+cors:
+  allowed-origins: "http://localhost:5173,http://localhost:4173,http://localhost:3000,http://localhost:8080"
 
 security:
   jwt:

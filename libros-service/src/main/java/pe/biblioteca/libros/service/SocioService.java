@@ -25,6 +25,11 @@ public class SocioService {
                 .orElseThrow(() -> new SocioNoEncontradoException(String.valueOf(id)));
     }
 
+    public Socio buscarPorUsuario(String usuario) {
+        return socioRepository.findByUsuario(usuario)
+                .orElseThrow(() -> new SocioNoEncontradoException(usuario));
+    }
+
     public Socio crear(Socio socio) {
         return socioRepository.save(socio);
     }
@@ -32,6 +37,7 @@ public class SocioService {
     public Socio editar(Long id, Socio datos) {
         Socio existente = buscarPorId(id);
         existente.setNombre(datos.getNombre());
+        existente.setUsuario(datos.getUsuario());
         existente.setEmail(datos.getEmail());
         existente.setTelefono(datos.getTelefono());
         existente.setActivo(datos.isActivo());

@@ -27,6 +27,7 @@ public class Socio {
     private Long id;
 
     private String nombre;
+    private String usuario;
     private String email;
     private String telefono;
     private LocalDate fechaInscripcion;

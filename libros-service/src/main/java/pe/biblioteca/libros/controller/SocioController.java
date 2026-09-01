@@ -31,6 +31,11 @@ public class SocioController {
         return ResponseEntity.ok(socioService.buscarPorId(id));
     }
 
+    @GetMapping("/usuario/{usuario}")
+    public ResponseEntity<Socio> buscarPorUsuario(@PathVariable String usuario) {
+        return ResponseEntity.ok(socioService.buscarPorUsuario(usuario));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Socio> editar(@PathVariable Long id, @RequestBody Socio datos) {
         return ResponseEntity.ok(socioService.editar(id, datos));

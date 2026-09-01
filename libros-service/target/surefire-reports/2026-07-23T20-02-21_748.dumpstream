@@ -1,5 +1,0 @@
-# Created at 2026-07-23T20:02:21.898
-Boot Manifest-JAR contains absolute paths in classpath 'E:\Tecsup\ProyectoFinal\walter-lopez-examen-microservicios\libros-service\target\test-classes'
-Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
-'other' has different root
-

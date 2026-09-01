@@ -19,6 +19,11 @@
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
                   "const body = pm.response.json();",
                   "pm.test('Retorna token', () => pm.expect(body.token).to.be.a('string'));",
+                  "pm.test('Retorna datos del socio', () => {",
+                  "    pm.expect(body.nombre).to.be.a('string');",
+                  "    pm.expect(body.usuario).to.be.a('string');",
+                  "    pm.expect(body.email).to.be.a('string');",
+                  "});",
                   "pm.collectionVariables.set('token', body.token);",
                   "console.log('Token guardado:', body.token);"
                 ],
@@ -33,12 +38,115 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"usuario\": \"admin\",\n  \"clave\": \"admin123\"\n}"
+              "raw": "{\n  \"usuario\": \"wlopez\",\n  \"clave\": \"password123\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/auth/login",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login fallido (credenciales incorrectas) → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Retorna mensaje de error', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.error).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"wlopez\",\n  \"clave\": \"claveIncorrecta\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validar token (válido)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Token válido', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.valido).to.be.true;",
+                  "    pm.expect(body.usuario).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/validar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "validar"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validar token (inválido/expirado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Token inválido', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.valido).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiJ9.token_invalido.firma\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/validar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "validar"]
             }
           },
           "response": []
@@ -217,16 +325,15 @@
       "name": "libros-service — Socios",
       "item": [
         {
-          "name": "Registrar socio",
+          "name": "Registrar socio (público, sin token)",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"codigoSocio\": \"S003\",\n  \"nombre\": \"Luis Mendoza\",\n  \"email\": \"luis.mendoza@email.com\",\n  \"telefono\": \"999777888\",\n  \"fechaInscripcion\": \"2026-07-01\",\n  \"activo\": true\n}"
+              "raw": "{\n  \"nombre\": \"Luis Mendoza\",\n  \"usuario\": \"lmendoza\",\n  \"email\": \"luis.mendoza@email.com\",\n  \"telefono\": \"999777888\",\n  \"fechaInscripcion\": \"2026-07-01\",\n  \"activo\": true,\n  \"password\": \"password789\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/socios",
@@ -238,45 +345,20 @@
         },
         {
           "name": "Listar todos los socios",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/socios",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "socios"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Buscar socio por código",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/socios/S001",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "socios", "S001"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Buscar socio inexistente → 404",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
-                  "pm.test('Mensaje de error presente', () => {",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Retorna lista de socios', () => {",
                   "    const body = pm.response.json();",
-                  "    pm.expect(body.error).to.include('S999');",
+                  "    pm.expect(body).to.be.an('array');",
+                  "    pm.expect(body.length).to.be.at.least(2);",
+                  "});",
+                  "pm.test('Socios tienen campo usuario', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body[0].usuario).to.be.a('string');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -289,9 +371,97 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/socios/S999",
+              "raw": "{{base_url}}/api/v1/socios",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "socios", "S999"]
+              "path": ["api", "v1", "socios"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar socio por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Socio encontrado', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.id).to.eql(1);",
+                  "    pm.expect(body.usuario).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/socios/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "socios", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar socio por usuario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Usuario correcto', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.usuario).to.eql('wlopez');",
+                  "    pm.expect(body.nombre).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/socios/usuario/wlopez",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "socios", "usuario", "wlopez"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar socio inexistente → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/socios/999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "socios", "999"]
             }
           },
           "response": []
@@ -306,12 +476,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Ana Torres Quispe\",\n  \"email\": \"ana.torres@email.com\",\n  \"telefono\": \"999111333\",\n  \"activo\": true\n}"
+              "raw": "{\n  \"nombre\": \"Walter Lopez Actualizado\",\n  \"usuario\": \"wlopez\",\n  \"email\": \"walter.lopez@email.com\",\n  \"telefono\": \"999111222\",\n  \"activo\": true\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/v1/socios/S001",
+              "raw": "{{base_url}}/api/v1/socios/1",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "socios", "S001"]
+              "path": ["api", "v1", "socios", "1"]
             }
           },
           "response": []
@@ -324,9 +494,9 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/socios/S003",
+              "raw": "{{base_url}}/api/v1/socios/3",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "socios", "S003"]
+              "path": ["api", "v1", "socios", "3"]
             }
           },
           "response": []
@@ -387,12 +557,12 @@
                   "    pm.expect(body).to.be.an('array');",
                   "    pm.expect(body.length).to.be.at.least(2);",
                   "});",
-                  "pm.test('S001 está activo, S002 está inactivo', () => {",
+                  "pm.test('Socio 1 activo, Socio 2 inactivo', () => {",
                   "    const body = pm.response.json();",
-                  "    const s001 = body.find(s => s.codigoSocio === 'S001');",
-                  "    const s002 = body.find(s => s.codigoSocio === 'S002');",
-                  "    pm.expect(s001.activo).to.be.true;",
-                  "    pm.expect(s002.activo).to.be.false;",
+                  "    const s1 = body.find(s => s.id === 1);",
+                  "    const s2 = body.find(s => s.id === 2);",
+                  "    pm.expect(s1.activo).to.be.true;",
+                  "    pm.expect(s2.activo).to.be.false;",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -731,6 +901,100 @@
       ]
     },
     {
+      "name": "prestamos-service — Pedidos",
+      "item": [
+        {
+          "name": "Crear pedido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test('Pedido creado con ID', () => pm.expect(body.id).to.be.a('number'));",
+                  "pm.test('Total calculado', () => pm.expect(body.totalPedido).to.be.a('number'));",
+                  "if (body.id) pm.collectionVariables.set('pedido_id', body.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"socioId\": 1,\n  \"nombre\": \"Walter Lopez\",\n  \"email\": \"walter.lopez@email.com\",\n  \"direccion\": \"Av. Principal 123, Lima\",\n  \"telefono\": \"999111222\",\n  \"items\": [\n    { \"ejemplarId\": 1, \"cantidad\": 1 },\n    { \"ejemplarId\": 2, \"cantidad\": 2 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/pedidos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "pedidos"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar pedidos por socio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Retorna lista', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/pedidos/socio/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "pedidos", "socio", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detalle de pedido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Retorna lista de detalles', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/pedidos/{{pedido_id}}/detalle",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "pedidos", "{{pedido_id}}", "detalle"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "notificaciones-service",
       "item": [
         {
@@ -782,6 +1046,10 @@
     },
     {
       "key": "prestamo_id",
+      "value": ""
+    },
+    {
+      "key": "pedido_id",
       "value": ""
     }
   ]

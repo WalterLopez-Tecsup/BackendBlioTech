@@ -57,8 +57,8 @@ public class CargaInicial implements CommandLineRunner {
             log.info("Ejemplares iniciales creados (31).");
         }
         if (socioRepository.count() == 0) {
-            socioRepository.save(new Socio(null, "Walter Lopez", "walter.lopez@email.com", "999111222", LocalDate.of(2024, 1, 10), true, "password123", null, null));
-            socioRepository.save(new Socio(null, "Carlos Ruiz", "carlos.ruiz@email.com", "999333444", LocalDate.of(2024, 3, 5), false, "password456", null, null));
+            socioRepository.save(new Socio(null, "Walter Lopez", "wlopez", "walter.lopez@email.com", "999111222", LocalDate.of(2024, 1, 10), true, "password123", null, null));
+            socioRepository.save(new Socio(null, "Carlos Ruiz", "cruiz", "carlos.ruiz@email.com", "999333444", LocalDate.of(2024, 3, 5), false, "password456", null, null));
             log.info("Socios iniciales creados (2).");
         }
     }
