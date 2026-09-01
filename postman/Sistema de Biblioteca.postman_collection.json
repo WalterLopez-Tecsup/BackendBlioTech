@@ -7,33 +7,76 @@
   },
   "item": [
     {
+      "name": "auth-service",
+      "item": [
+        {
+          "name": "Login (obtener token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Retorna token', () => pm.expect(body.token).to.be.a('string'));",
+                  "pm.collectionVariables.set('token', body.token);",
+                  "console.log('Token guardado:', body.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"admin\",\n  \"clave\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "libros-service — Ejemplares",
       "item": [
+        {
+          "name": "Listar ejemplares (público, sin token)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/libros",
+              "host": ["{{base_url}}"],
+              "path": ["public", "libros"]
+            }
+          },
+          "response": []
+        },
         {
           "name": "Crear ejemplar",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"codigoEjemplar\": \"BIB-0004\",\n  \"titulo\": \"El Principito\",\n  \"autor\": \"Antoine de Saint-Exupéry\",\n  \"isbn\": \"978-0156012195\",\n  \"anioPublicacion\": 1943,\n  \"disponible\": true\n}"
             },
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/libros",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "libros"
-              ]
+              "raw": "{{base_url}}/api/v1/libros",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "libros"]
             }
           },
           "response": []
@@ -42,18 +85,13 @@
           "name": "Listar todos los ejemplares",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/libros",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "libros"
-              ]
+              "raw": "{{base_url}}/api/v1/libros",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "libros"]
             }
           },
           "response": []
@@ -77,19 +115,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/libros/BIB-0001",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "libros",
-                "BIB-0001"
-              ]
+              "raw": "{{base_url}}/api/v1/libros/BIB-0001",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "libros", "BIB-0001"]
             }
           },
           "response": []
@@ -113,19 +145,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/libros/BIB-9999",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "libros",
-                "BIB-9999"
-              ]
+              "raw": "{{base_url}}/api/v1/libros/BIB-9999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "libros", "BIB-9999"]
             }
           },
           "response": []
@@ -135,27 +161,17 @@
           "request": {
             "method": "PUT",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"titulo\": \"Cien años de soledad (Ed. Especial)\",\n  \"autor\": \"Gabriel García Márquez\",\n  \"isbn\": \"978-0060883287\",\n  \"anioPublicacion\": 1967,\n  \"disponible\": true\n}"
             },
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/libros/BIB-0001",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "libros",
-                "BIB-0001"
-              ]
+              "raw": "{{base_url}}/api/v1/libros/BIB-0001",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "libros", "BIB-0001"]
             }
           },
           "response": []
@@ -165,28 +181,17 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"disponible\": false\n}"
             },
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/libros/BIB-0001/disponibilidad",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "libros",
-                "BIB-0001",
-                "disponibilidad"
-              ]
+              "raw": "{{base_url}}/api/v1/libros/BIB-0001/disponibilidad",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "libros", "BIB-0001", "disponibilidad"]
             }
           },
           "response": []
@@ -195,19 +200,13 @@
           "name": "Eliminar ejemplar",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/libros/BIB-0004",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "libros",
-                "BIB-0004"
-              ]
+              "raw": "{{base_url}}/api/v1/libros/BIB-0004",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "libros", "BIB-0004"]
             }
           },
           "response": []
@@ -222,26 +221,17 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"codigoSocio\": \"S003\",\n  \"nombre\": \"Luis Mendoza\",\n  \"email\": \"luis.mendoza@email.com\",\n  \"telefono\": \"999777888\",\n  \"fechaInscripcion\": \"2026-07-01\",\n  \"activo\": true\n}"
             },
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/socios",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "socios"
-              ]
+              "raw": "{{base_url}}/api/v1/socios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "socios"]
             }
           },
           "response": []
@@ -250,18 +240,13 @@
           "name": "Listar todos los socios",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/socios",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "socios"
-              ]
+              "raw": "{{base_url}}/api/v1/socios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "socios"]
             }
           },
           "response": []
@@ -270,19 +255,13 @@
           "name": "Buscar socio por código",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/socios/S001",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "socios",
-                "S001"
-              ]
+              "raw": "{{base_url}}/api/v1/socios/S001",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "socios", "S001"]
             }
           },
           "response": []
@@ -306,19 +285,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/socios/S999",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "socios",
-                "S999"
-              ]
+              "raw": "{{base_url}}/api/v1/socios/S999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "socios", "S999"]
             }
           },
           "response": []
@@ -328,27 +301,17 @@
           "request": {
             "method": "PUT",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nombre\": \"Ana Torres Quispe\",\n  \"email\": \"ana.torres@email.com\",\n  \"telefono\": \"999111333\",\n  \"activo\": true\n}"
             },
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/socios/S001",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "socios",
-                "S001"
-              ]
+              "raw": "{{base_url}}/api/v1/socios/S001",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "socios", "S001"]
             }
           },
           "response": []
@@ -357,19 +320,13 @@
           "name": "Eliminar socio",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/socios/S003",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "socios",
-                "S003"
-              ]
+              "raw": "{{base_url}}/api/v1/socios/S003",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "socios", "S003"]
             }
           },
           "response": []
@@ -378,6 +335,7 @@
     },
     {
       "name": "prestamos-service",
+      "description": "Escenarios que se ejecutan durante la sustentación. Correr en orden.",
       "item": [
         {
           "name": "GET Listar ejemplares",
@@ -405,18 +363,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/libros",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "libros"
-              ]
+              "raw": "{{base_url}}/api/v1/libros",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "libros"]
             }
           },
           "response": []
@@ -448,18 +401,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{libros_port}}/api/v1/socios",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{libros_port}}",
-              "path": [
-                "api",
-                "v1",
-                "socios"
-              ]
+              "raw": "{{base_url}}/api/v1/socios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "socios"]
             }
           },
           "response": []
@@ -480,7 +428,6 @@
                   "    const body = pm.response.json();",
                   "    pm.expect(body.motivoRechazo).to.be.null;",
                   "});",
-                  "// Guardar el id para los escenarios 07 y 08",
                   "const body = pm.response.json();",
                   "if (body.id) {",
                   "    pm.collectionVariables.set('prestamo_id', body.id);",
@@ -494,26 +441,17 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"codigoEjemplar\": \"BIB-0001\",\n  \"codigoSocio\": \"S001\",\n  \"diasPrestamo\": 7\n}"
             },
             "url": {
-              "raw": "{{base_url}}:{{prestamos_port}}/api/v1/prestamos",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{prestamos_port}}",
-              "path": [
-                "api",
-                "v1",
-                "prestamos"
-              ]
+              "raw": "{{base_url}}/api/v1/prestamos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "prestamos"]
             }
           },
           "response": []
@@ -542,26 +480,17 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"codigoEjemplar\": \"BIB-0001\",\n  \"codigoSocio\": \"S001\",\n  \"diasPrestamo\": 7\n}"
             },
             "url": {
-              "raw": "{{base_url}}:{{prestamos_port}}/api/v1/prestamos",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{prestamos_port}}",
-              "path": [
-                "api",
-                "v1",
-                "prestamos"
-              ]
+              "raw": "{{base_url}}/api/v1/prestamos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "prestamos"]
             }
           },
           "response": []
@@ -590,26 +519,17 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"codigoEjemplar\": \"BIB-0002\",\n  \"codigoSocio\": \"S002\",\n  \"diasPrestamo\": 7\n}"
             },
             "url": {
-              "raw": "{{base_url}}:{{prestamos_port}}/api/v1/prestamos",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{prestamos_port}}",
-              "path": [
-                "api",
-                "v1",
-                "prestamos"
-              ]
+              "raw": "{{base_url}}/api/v1/prestamos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "prestamos"]
             }
           },
           "response": []
@@ -638,26 +558,17 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"codigoEjemplar\": \"BIB-9999\",\n  \"codigoSocio\": \"S001\",\n  \"diasPrestamo\": 7\n}"
             },
             "url": {
-              "raw": "{{base_url}}:{{prestamos_port}}/api/v1/prestamos",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{prestamos_port}}",
-              "path": [
-                "api",
-                "v1",
-                "prestamos"
-              ]
+              "raw": "{{base_url}}/api/v1/prestamos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "prestamos"]
             }
           },
           "response": []
@@ -685,20 +596,13 @@
           ],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{prestamos_port}}/api/v1/prestamos/{{prestamo_id}}/devolucion",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{prestamos_port}}",
-              "path": [
-                "api",
-                "v1",
-                "prestamos",
-                "{{prestamo_id}}",
-                "devolucion"
-              ]
+              "raw": "{{base_url}}/api/v1/prestamos/{{prestamo_id}}/devolucion",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "prestamos", "{{prestamo_id}}", "devolucion"]
             }
           },
           "response": []
@@ -722,20 +626,13 @@
           ],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{prestamos_port}}/api/v1/prestamos/{{prestamo_id}}/devolucion",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{prestamos_port}}",
-              "path": [
-                "api",
-                "v1",
-                "prestamos",
-                "{{prestamo_id}}",
-                "devolucion"
-              ]
+              "raw": "{{base_url}}/api/v1/prestamos/{{prestamo_id}}/devolucion",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "prestamos", "{{prestamo_id}}", "devolucion"]
             }
           },
           "response": []
@@ -764,18 +661,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{notificaciones_port}}/api/v1/notificaciones",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{notificaciones_port}}",
-              "path": [
-                "api",
-                "v1",
-                "notificaciones"
-              ]
+              "raw": "{{base_url}}/api/v1/notificaciones",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notificaciones"]
             }
           },
           "response": []
@@ -784,18 +676,13 @@
           "name": "Listar todos los préstamos",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{prestamos_port}}/api/v1/prestamos",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{prestamos_port}}",
-              "path": [
-                "api",
-                "v1",
-                "prestamos"
-              ]
+              "raw": "{{base_url}}/api/v1/prestamos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "prestamos"]
             }
           },
           "response": []
@@ -804,19 +691,13 @@
           "name": "Buscar préstamo por id",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{prestamos_port}}/api/v1/prestamos/{{prestamo_id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{prestamos_port}}",
-              "path": [
-                "api",
-                "v1",
-                "prestamos",
-                "{{prestamo_id}}"
-              ]
+              "raw": "{{base_url}}/api/v1/prestamos/{{prestamo_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "prestamos", "{{prestamo_id}}"]
             }
           },
           "response": []
@@ -836,25 +717,18 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{prestamos_port}}/api/v1/prestamos/99999",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{prestamos_port}}",
-              "path": [
-                "api",
-                "v1",
-                "prestamos",
-                "99999"
-              ]
+              "raw": "{{base_url}}/api/v1/prestamos/99999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "prestamos", "99999"]
             }
           },
           "response": []
         }
-      ],
-      "description": "Escenarios que se ejecutan durante la sustentación. Correr en orden."
+      ]
     },
     {
       "name": "notificaciones-service",
@@ -864,26 +738,17 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"destino\": \"ana.torres@email.com\",\n  \"mensaje\": \"Notificación de prueba manual.\",\n  \"canal\": \"EMAIL\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}:{{notificaciones_port}}/api/v1/notificaciones",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{notificaciones_port}}",
-              "path": [
-                "api",
-                "v1",
-                "notificaciones"
-              ]
+              "raw": "{{base_url}}/api/v1/notificaciones",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notificaciones"]
             }
           },
           "response": []
@@ -892,45 +757,13 @@
           "name": "Listar todas las notificaciones",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
             "url": {
-              "raw": "{{base_url}}:{{notificaciones_port}}/api/v1/notificaciones",
-              "host": [
-                "{{base_url}}"
-              ],
-              "port": "{{notificaciones_port}}",
-              "path": [
-                "api",
-                "v1",
-                "notificaciones"
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Login",
-      "item": [
-        {
-          "name": "Login",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://{{host}}:{{gatewayPort}}/api/v1/auth/login",
-              "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
-              "port": "{{gatewayPort}}",
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "login"
-              ]
+              "raw": "{{base_url}}/api/v1/notificaciones",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notificaciones"]
             }
           },
           "response": []
@@ -939,6 +772,14 @@
     }
   ],
   "variable": [
+    {
+      "key": "base_url",
+      "value": "http://18.191.13.135:8080"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
     {
       "key": "prestamo_id",
       "value": ""
